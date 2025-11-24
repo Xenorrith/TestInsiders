@@ -25,10 +25,6 @@ authRouter.post("/register", async (req, res) => {
     res.status(201).json({ token: generateToken(user.id) });
 });
 
-authRouter.post("/forgot-password", (req, res) => {
-    res.send("Forgot Password");
-});
-
 authRouter.post("/login", async (req, res) => {
     const { email, password } = req.body || {};
 
