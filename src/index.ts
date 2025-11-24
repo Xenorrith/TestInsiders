@@ -1,9 +1,9 @@
 import express from "express";
 import dotenv from "dotenv";
-import type { Request, Response } from "express";
-import authRouter from "./auth";
-import userRouter from "./user";
-import bookRouter from "./book";
+
+import authRouter from "./auth.js";
+import userRouter from "./user.js";
+import bookRouter from "./book.js";
 
 dotenv.config();
 const app = express();

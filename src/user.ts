@@ -1,5 +1,5 @@
 import express from "express";
-import { authMiddleware, isAdminMiddleware } from "./utils/middleware";
+import { authMiddleware, isAdminMiddleware } from "./utils/middleware.js";
 
 const userRouter = express.Router();
 
@@ -15,6 +15,10 @@ userRouter.get("/:id", (req, res) => {
 
 userRouter.post("/", isAdminMiddleware, (req, res) => {
     res.send("Create User");
+});
+
+userRouter.post("/:id/trade", authMiddleware, (req, res) => {
+    res.send("Trade");
 });
 
 userRouter.put("/:id", isAdminMiddleware, (req, res) => {
