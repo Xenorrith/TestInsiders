@@ -21,8 +21,12 @@ const authMiddleware = (
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  const decoded = verifyToken(token);
-  req.userId = decoded.userId;
+  try {
+    const decoded = verifyToken(token);
+    req.userId = decoded.userId;
+  } catch (error) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
 
   if (!req.userId) {
     return res.status(401).json({ error: "Unauthorized" });

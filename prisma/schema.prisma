@@ -54,9 +54,9 @@ model Trade {
   senderBookId String
   receiverBookId String
 
-  sender Book @relation(fields: [senderBookId], references: [id], name: "senderBook")
-  receiver Book @relation(fields: [receiverBookId], references: [id], name: "receiverBook")
+  sender User @relation(fields: [senderId], references: [id], name: "sender")
+  receiver User @relation(fields: [receiverId], references: [id], name: "receiver")
 
-  senderBook User @relation(fields: [senderId], references: [id], name: "sender")
-  receiverBook User @relation(fields: [receiverId], references: [id], name: "receiver")
+  senderBook Book @relation(fields: [senderBookId], references: [id], name: "senderBook")
+  receiverBook Book @relation(fields: [receiverBookId], references: [id], name: "receiverBook")
 }
