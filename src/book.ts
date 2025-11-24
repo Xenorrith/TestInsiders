@@ -65,7 +65,7 @@ bookRouter.post("/", isAdminMiddleware, async (req: AuthRequest, res) => {
     res.json(book);
 });
 
-bookRouter.put("/:id", isAdminMiddleware, async (req: AuthRequest, res) => {
+bookRouter.patch("/:id", isAdminMiddleware, async (req: AuthRequest, res) => {
     const user = await prisma.user.findUnique({
         where: {
             id: req.userId as string,
@@ -76,6 +76,12 @@ bookRouter.put("/:id", isAdminMiddleware, async (req: AuthRequest, res) => {
         return res.status(401).json({ error: "Invalid credentials" });
     }
 
+    const getBook = await prisma.book.findUnique({ where: { id: req.params.id } });
+
+    if (getBook?.authorId !== user.id) {
+        return res.status(401).json({ error: "Invalid credentials" });
+    }
+
     const { name, photo } = req.body;
     const book = await prisma.book.update({
         where: {
@@ -83,7 +89,6 @@ bookRouter.put("/:id", isAdminMiddleware, async (req: AuthRequest, res) => {
         },
         data: {
             name,
-            authorId: user.id,
             photo,
         }
     });
@@ -99,6 +104,12 @@ bookRouter.delete("/:id", isAdminMiddleware, async (req: AuthRequest, res) => {
     });
 
     if (!user) {
+        return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    const getBook = await prisma.book.findUnique({ where: { id: req.params.id } });
+
+    if (getBook?.authorId !== user.id) {
         return res.status(401).json({ error: "Invalid credentials" });
     }
 
