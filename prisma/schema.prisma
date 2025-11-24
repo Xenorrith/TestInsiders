@@ -18,6 +18,12 @@ enum Role {
   USER
 }
 
+enum TradeStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
 model User {
   id    String @id @default(cuid())
   email String @unique
@@ -26,6 +32,8 @@ model User {
   password String @db.VarChar(255)
   role Role @default(USER)
   books Book[]
+  tradesAsSender Trade[] @relation("sender")
+  tradesAsReceiver Trade[] @relation("receiver")
 }
 
 model Book {
@@ -34,4 +42,21 @@ model Book {
   author User @relation(fields: [authorId], references: [id])
   authorId String
   photo String
+  tradesAsSender Trade[] @relation("senderBook")
+  tradesAsReceiver Trade[] @relation("receiverBook")
+}
+
+model Trade {
+  id    String @id @default(cuid())
+  senderId String
+  receiverId String
+  status TradeStatus @default(PENDING)
+  senderBookId String
+  receiverBookId String
+
+  sender Book @relation(fields: [senderBookId], references: [id], name: "senderBook")
+  receiver Book @relation(fields: [receiverBookId], references: [id], name: "receiverBook")
+
+  senderBook User @relation(fields: [senderId], references: [id], name: "sender")
+  receiverBook User @relation(fields: [receiverId], references: [id], name: "receiver")
 }
