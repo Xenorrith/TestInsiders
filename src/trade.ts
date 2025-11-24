@@ -31,6 +31,10 @@ tradeRouter.patch("/:id", authMiddleware, async (req: AuthRequest, res) => {
     const trade = await prisma.trade.findUnique({ where: { id: tradeId } });
     if (!trade) return res.status(404).json({ error: "Trade not found" });
 
+    if (trade.status === TradeStatus.ACCEPTED || trade.status == TradeStatus.REJECTED) {
+        return res.status(400).json({ error: "Trade already completed" });
+    }
+
     const rawStatus = req.body.status;
     if (!rawStatus) return res.status(400).json({ error: "Missing status" });
 
