@@ -41,7 +41,7 @@ userRouter.post("/", isAdminMiddleware, async (req: AdminRequest, res) => {
     if (!req.isAdmin) {
         return res.status(401).json({ error: "Unauthorized" });
     }
-    const { username, email, password} = req.body || {};
+    const { username, email, password} = req.body;
 
     if (!username || !email || !password) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -67,7 +67,7 @@ userRouter.post("/", isAdminMiddleware, async (req: AdminRequest, res) => {
         },
     });
 
-    res.status(201).json({ token: generateToken(user.id) });
+    res.status(201).json({ token: generateToken(user.id, "7d") });
 });
 
 userRouter.patch("/:id", isAdminMiddleware, async (req: AdminRequest, res) => {
@@ -84,24 +84,11 @@ userRouter.patch("/:id", isAdminMiddleware, async (req: AdminRequest, res) => {
         return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    const { username, email, password, role } = req.body || {};
-
-    const hashedPassword = hashPassword(password);
-
-    if (!username || !email || !password) {
-        return res.status(400).json({ error: "Missing required fields" });
-    }
-
     const updatedUser = await prisma.user.update({
         where: {
             id: req.params.id,
         },
-        data: {
-            username,
-            email,
-            password: hashedPassword,
-            role,
-        },
+        data: req.body,
     });
 
     res.json(updatedUser);

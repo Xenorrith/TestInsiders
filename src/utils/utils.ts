@@ -1,11 +1,14 @@
 import nodemailer from "nodemailer";
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
-export function generateToken(userId: string) {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "7d" });
+export function generateToken(
+  userId: string,
+  expiresIn: SignOptions["expiresIn"]
+) {
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn });
 }
 
 export function verifyToken(token: string) {

@@ -22,7 +22,7 @@ authRouter.post("/register", async (req, res) => {
         },
     });
 
-    res.status(201).json({ token: generateToken(user.id) });
+    res.status(201).json({ token: generateToken(user.id, "7d") });
 });
 
 authRouter.post("/login", async (req, res) => {
@@ -48,7 +48,7 @@ authRouter.post("/login", async (req, res) => {
         return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    res.json({ token: generateToken(user.id) });
+    res.json({ token: generateToken(user.id, "7d") });
 });
 
 authRouter.get("/verify-email/:token", async (req, res) => {
@@ -87,9 +87,74 @@ authRouter.post("/verify-email", authMiddleware, async (req: AuthRequest, res) =
         return res.status(401).json({ error: "Email already verified" });
     }
 
-    const token = generateToken(user?.email as string);
+    const token = generateToken(user?.email as string, "10m");
     sendEmail(user?.email as string, "Verify Email", `<a href="http://localhost:3030/verify-email/${token}">Verify Email</a>`);
     return res.status(200).json({ message: "Check your email" });
 });
+
+authRouter.post("/forgot-password", async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: "Email is required" });
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  const token = generateToken(email, "10m");
+
+  const link = `http://localhost:3030/reset-password/${token}`;
+
+  await sendEmail(
+    email,
+    "Reset your password",
+    `<p>Click here to reset your password:</p><a href="${link}">${link}</a>`
+  );
+
+  res.json({ message: "Password reset link sent to email" });
+});
+
+authRouter.post("/reset-password/:token", async (req, res) => {
+  const { password } = req.body;
+
+  if (!password) {
+    return res.status(400).json({ error: "New password required" });
+  }
+
+  let decoded;
+  try {
+    decoded = verifyToken(req.params.token);
+  } catch (err) {
+    return res.status(400).json({ error: "Invalid or expired token" });
+  }
+
+  const email = decoded.userId; // ти ж туди email пхаєш
+
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  const hashedPassword = hashPassword(password);
+
+  await prisma.user.update({
+    where: { email },
+    data: {
+      password: hashedPassword,
+    },
+  });
+
+  res.json({ message: "Password successfully updated" });
+});
+
 
 export default authRouter;
