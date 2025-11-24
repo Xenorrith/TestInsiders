@@ -1,4 +1,5 @@
 import express from "express";
+import { prisma } from "./utils/prisma.js";
 import { authMiddleware, AuthRequest } from "./utils/middleware.js";
 
 const tradeRouter = express.Router();
@@ -12,7 +13,20 @@ tradeRouter.put("/:id", authMiddleware, async (req: AuthRequest, res) => {
 });
 
 tradeRouter.get("/me/", authMiddleware, async (req: AuthRequest, res) => {
-    res.json({ message: "My trades" });
+    const trades = await prisma.trade.findMany({
+        where: {
+            OR: [
+                {
+                    receiverId: req.userId as string,
+                },
+                {
+                    senderId: req.userId as string,
+                },
+            ]
+        },
+    });
+    
+    res.json(trades);
 });
 
 export default tradeRouter;

@@ -1,16 +1,41 @@
 import express from "express";
 import { prisma } from "./utils/prisma.js";
+import { paginate } from "./utils/pagination.js";
+import { Prisma } from "./generated/prisma/client.js";
 import { isAdminMiddleware, authMiddleware, AuthRequest } from "./utils/middleware.js";
 
 const bookRouter = express.Router();
 
 bookRouter.use(authMiddleware);
 
-bookRouter.get("/", async (req: AuthRequest, res) => {
-    const books = await prisma.book.findMany();
 
-    res.json(books);
+// GET all books
+bookRouter.get("/", async (req: AuthRequest, res) => {
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+
+  const result = await paginate<Prisma.BookWhereInput, any>(prisma.book, { page, limit, orderBy: { name: "asc" } });
+  res.json(result);
 });
+
+// GET books of current user
+bookRouter.get("/me", async (req: AuthRequest, res) => {
+  const user = await prisma.user.findUnique({ where: { id: req.userId as string } });
+  if (!user) return res.status(401).json({ error: "Invalid credentials" });
+
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+
+  const result = await paginate<Prisma.BookWhereInput, any>(prisma.book, {
+    page,
+    limit,
+    where: { authorId: user.id },
+    orderBy: { name: "asc" },
+  });
+
+  res.json(result);
+});
+
 
 bookRouter.get("/:id", async (req: AuthRequest, res) => {
     const book = await prisma.book.findUnique({
@@ -20,26 +45,6 @@ bookRouter.get("/:id", async (req: AuthRequest, res) => {
     });
 
     res.json(book);
-});
-
-bookRouter.get("/me", async (req: AuthRequest, res) => {
-    const user = await prisma.user.findUnique({
-        where: {
-            id: req.userId as string,
-        }
-    });
-
-    if (!user) {
-        return res.status(401).json({ error: "Invalid credentials" });
-    }
-
-    const books = await prisma.book.findMany({
-        where: {
-            authorId: user.id,
-        }
-    });
-
-    res.json(books);
 });
 
 bookRouter.post("/", isAdminMiddleware, async (req: AuthRequest, res) => {
