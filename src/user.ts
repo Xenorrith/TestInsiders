@@ -9,13 +9,26 @@ const userRouter = express.Router();
 userRouter.use(authMiddleware);
 
 userRouter.get("/", async (req, res) => {
-    const users = await prisma.user.findMany();
+    const users = await prisma.user.findMany({
+        select: {
+            id: true,
+            username: true,
+            email: true,
+            role: true,
+        }
+    });
 
     res.json(users);
 });
 
 userRouter.get("/:id", async (req, res) => {
     const user = await prisma.user.findUnique({
+        select: {
+            id: true,
+            username: true,
+            email: true,
+            role: true,
+        },
         where: {
             id: req.params.id,
         }
@@ -30,6 +43,10 @@ userRouter.post("/", isAdminMiddleware, async (req: AdminRequest, res) => {
     }
     const { username, email, password} = req.body || {};
 
+    if (!username || !email || !password) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
+
     const hashedPassword = hashPassword(password);
 
     if (!username || !email || !password) {
@@ -37,6 +54,12 @@ userRouter.post("/", isAdminMiddleware, async (req: AdminRequest, res) => {
     }
 
     const user = await prisma.user.create({
+        select: {
+            id: true,
+            username: true,
+            email: true,
+            role: true,
+        },
         data: {
             username,
             email,
@@ -48,7 +71,14 @@ userRouter.post("/", isAdminMiddleware, async (req: AdminRequest, res) => {
 });
 
 userRouter.patch("/:id", isAdminMiddleware, async (req: AdminRequest, res) => {
-    const user = await prisma.user.findUnique({ where: { id: req.params.id } });
+    const user = await prisma.user.findUnique({
+        select: {
+            id: true,
+            username: true,
+            email: true,
+            role: true,
+        },
+        where: { id: req.params.id } });
 
     if (!user || (user.id !== req.userId && req.isAdmin)) {
         return res.status(401).json({ error: "Invalid credentials" });
@@ -78,7 +108,14 @@ userRouter.patch("/:id", isAdminMiddleware, async (req: AdminRequest, res) => {
 });
 
 userRouter.delete("/:id", isAdminMiddleware, async (req: AdminRequest, res) => {
-    const user = await prisma.user.findUnique({ where: { id: req.params.id } });
+    const user = await prisma.user.findUnique({
+        select: {
+            id: true,
+            username: true,
+            email: true,
+            role: true,
+        },
+        where: { id: req.params.id } });
 
     if (!user || (user.id !== req.userId && req.isAdmin)) {
         return res.status(401).json({ error: "Invalid credentials" });
