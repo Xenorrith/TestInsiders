@@ -1,6 +1,6 @@
 import express from "express";
 import { prisma } from "./utils/prisma.js";
-import { comparePassword, generateToken, hashPassword } from "./utils/utils.js";
+import { comparePassword, generateToken, hashPassword, sendEmail, verifyToken } from "./utils/utils.js";
 import { authMiddleware, AuthRequest } from "./utils/middleware.js";
 
 const authRouter = express.Router();
@@ -55,10 +55,12 @@ authRouter.post("/login", async (req, res) => {
     res.json({ token: generateToken(user.id) });
 });
 
-authRouter.post("/verify-email", authMiddleware, (req: AuthRequest, res) => {
-    const user = prisma.user.findUnique({
+authRouter.get("/verify-email/:token", async (req, res) => {
+    const email = verifyToken(req.params.token).userId;
+
+    const user = await prisma.user.findUnique({
         where: {
-            id: req.userId as string,
+            email: email,
         }
     });
 
@@ -66,7 +68,32 @@ authRouter.post("/verify-email", authMiddleware, (req: AuthRequest, res) => {
         return res.status(401).json({ error: "Invalid credentials" });
     }
 
+    await prisma.user.update({
+        where: {
+            email: email,
+        },
+        data: {
+            emailVerified: true,
+        },
+    });
+
     res.json({ message: "Email verified" });
+});
+
+authRouter.post("/verify-email", authMiddleware, async (req: AuthRequest, res) => {
+    const user = await prisma.user.findUnique({
+        where: {
+            id: req.userId as string,
+        }
+    });
+
+    if (user?.emailVerified) {
+        return res.status(401).json({ error: "Email already verified" });
+    }
+
+    const token = generateToken(user?.email as string);
+    sendEmail(user?.email as string, "Verify Email", `<a href="http://localhost:3030/verify-email/${token}">Verify Email</a>`);
+    return res.status(200).json({ message: "Check your email" });
 });
 
 export default authRouter;

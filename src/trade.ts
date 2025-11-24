@@ -7,6 +7,10 @@ tradeRouter.post("/", authMiddleware, async (req: AuthRequest, res) => {
     res.json({ message: "Send trade" });
 });
 
+tradeRouter.put("/:id", authMiddleware, async (req: AuthRequest, res) => {
+    res.json({ message: "Accept trade or Reject trade" });
+});
+
 tradeRouter.get("/me/", authMiddleware, async (req: AuthRequest, res) => {
     res.json({ message: "My trades" });
 });
