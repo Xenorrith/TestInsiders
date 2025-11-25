@@ -4,18 +4,19 @@ import { authMiddleware, isAdminMiddleware } from "./utils/middleware.js";
 import { generateToken, hashPassword } from "./utils/utils.js";
 import { AdminRequest, AuthRequest } from "./utils/middleware.js";
 
+const userSelected = {
+    id: true,
+    username: true,
+    email: true,
+    role: true,
+}
 const userRouter = express.Router();
 
 userRouter.use(authMiddleware);
 
 userRouter.get("/", async (req, res) => {
     const users = await prisma.user.findMany({
-        select: {
-            id: true,
-            username: true,
-            email: true,
-            role: true,
-        }
+        select: userSelected,
     });
 
     res.json(users);
@@ -23,12 +24,7 @@ userRouter.get("/", async (req, res) => {
 
 userRouter.get("/:id", async (req, res) => {
     const user = await prisma.user.findUnique({
-        select: {
-            id: true,
-            username: true,
-            email: true,
-            role: true,
-        },
+        select: userSelected,
         where: {
             id: req.params.id,
         }
@@ -48,18 +44,8 @@ userRouter.post("/", isAdminMiddleware, async (req: AdminRequest, res) => {
     }
 
     const hashedPassword = hashPassword(password);
-
-    if (!username || !email || !password) {
-        return res.status(400).json({ error: "Missing required fields" });
-    }
-
     const user = await prisma.user.create({
-        select: {
-            id: true,
-            username: true,
-            email: true,
-            role: true,
-        },
+        select: userSelected,
         data: {
             username,
             email,
@@ -72,12 +58,6 @@ userRouter.post("/", isAdminMiddleware, async (req: AdminRequest, res) => {
 
 userRouter.patch("/:id", isAdminMiddleware, async (req: AdminRequest, res) => {
     const user = await prisma.user.findUnique({
-        select: {
-            id: true,
-            username: true,
-            email: true,
-            role: true,
-        },
         where: { id: req.params.id } });
 
     if (!user || (user.id !== req.userId && req.isAdmin)) {
@@ -85,6 +65,7 @@ userRouter.patch("/:id", isAdminMiddleware, async (req: AdminRequest, res) => {
     }
 
     const updatedUser = await prisma.user.update({
+        select: userSelected,
         where: {
             id: req.params.id,
         },
@@ -96,12 +77,6 @@ userRouter.patch("/:id", isAdminMiddleware, async (req: AdminRequest, res) => {
 
 userRouter.delete("/:id", isAdminMiddleware, async (req: AdminRequest, res) => {
     const user = await prisma.user.findUnique({
-        select: {
-            id: true,
-            username: true,
-            email: true,
-            role: true,
-        },
         where: { id: req.params.id } });
 
     if (!user || (user.id !== req.userId && req.isAdmin)) {
@@ -109,6 +84,7 @@ userRouter.delete("/:id", isAdminMiddleware, async (req: AdminRequest, res) => {
     }
     
     const deletedUser = await prisma.user.delete({
+        select: userSelected,
         where: {
             id: req.params.id,
         }

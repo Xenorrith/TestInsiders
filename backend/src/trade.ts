@@ -53,13 +53,6 @@ tradeRouter.patch("/:id", authMiddleware, async (req: AuthRequest, res) => {
       if (!senderBook || !receiverBook)
         return res.status(400).json({ error: "Books not found" });
 
-      if (
-        senderBook.authorId !== trade.receiverId ||
-        receiverBook.authorId !== trade.senderId
-      ) {
-        return res.status(400).json({ error: "One of books already changed owner" });
-      }
-
       const result = await prisma.$transaction([
         prisma.book.update({
           where: { id: receiverBook.id },
