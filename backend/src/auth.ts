@@ -5,6 +5,10 @@ import { authMiddleware, AuthRequest } from "./utils/middleware.js";
 
 const authRouter = express.Router();
 
+authRouter.get("/check", authMiddleware, (req: AuthRequest, res) => {
+    res.json({ userId: req.userId });
+});
+
 authRouter.post("/register", async (req, res) => {
     const { username, email, password } = req.body || {};
 
@@ -20,6 +24,12 @@ authRouter.post("/register", async (req, res) => {
             email,
             password: hashedPassword,
         },
+    });
+
+    res.cookie("auth_token", generateToken(user.id, "7d"), {
+        secure: false,
+        sameSite: "strict",
+        maxAge: 60 * 60 * 24 * 7 * 1000,
     });
 
     res.status(201).json({ token: generateToken(user.id, "7d") });
@@ -47,6 +57,12 @@ authRouter.post("/login", async (req, res) => {
     if (!isPasswordValid) {
         return res.status(401).json({ error: "Invalid credentials" });
     }
+
+    res.cookie("auth_token", generateToken(user.id, "7d"), {
+        secure: false,
+        sameSite: "strict",
+        maxAge: 60 * 60 * 24 * 7 * 1000,
+    });
 
     res.json({ token: generateToken(user.id, "7d") });
 });

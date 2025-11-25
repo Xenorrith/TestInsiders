@@ -10,7 +10,7 @@ interface AdminRequest extends AuthRequest {
   isAdmin?: boolean;
 }
 
-const authMiddleware = (
+const authMiddleware = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
@@ -23,6 +23,14 @@ const authMiddleware = (
 
   try {
     const decoded = verifyToken(token);
+    const user = await prisma.user.findUnique({
+      where: {
+        id: decoded.userId,
+      }
+    })
+
+    if (!user) return res.status(401).json({ error: "User not found" }); 
+
     req.userId = decoded.userId;
   } catch (error) {
     return res.status(401).json({ error: "Unauthorized" });

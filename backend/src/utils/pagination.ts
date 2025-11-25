@@ -17,6 +17,12 @@ export async function paginate<T, V>(
 
   const [data, total] = await prisma.$transaction([
     prismaModel.findMany({
+      select: {
+        id: true,
+        name: true,
+        author: true,
+        photo: true,
+      },
       where: options.where,
       orderBy: options.orderBy,
       skip,

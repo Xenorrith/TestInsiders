@@ -1,5 +1,7 @@
+import cookieParser from "cookie-parser";
 import express from "express";
 import dotenv from "dotenv";
+import cors from "cors";
 
 import authRouter from "./auth.js";
 import userRouter from "./user.js";
@@ -9,6 +11,11 @@ import tradeRouter from "./trade.js";
 dotenv.config();
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
+app.use(cors({
+    credentials: true,
+    origin: true,
+}));
 
 app.use("/", authRouter);
 app.use("/user", userRouter);
