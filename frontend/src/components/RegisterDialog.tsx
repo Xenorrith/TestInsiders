@@ -7,6 +7,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { register as registerAPI } from "@/app/api";
 import { toast } from "sonner";
+import { useLogin } from "@/app/store";
 
 const registerSchema = z.object({
     username: z.string().min(3, "Username must be at least 3 characters"),
@@ -17,6 +18,7 @@ const registerSchema = z.object({
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 const RegisterDialog = () => {
+    const setIsAuthenticated = useLogin((state) => state.setLogin);
     const { register, handleSubmit, formState: { errors } } = useForm<RegisterFormData>({
         resolver: zodResolver(registerSchema)
     });
@@ -25,8 +27,8 @@ const RegisterDialog = () => {
         try {
             const success = await registerAPI(data.email, data.username, data.password);
             if (success) {
-                // Handle successful registration
                 toast("Registration successful");
+                setIsAuthenticated(true);
             }
         } catch (error) {
             toast("Registration failed");

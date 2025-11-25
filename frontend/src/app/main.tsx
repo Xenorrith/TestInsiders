@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Home from "../pages/Home";
 import Profile from "../pages/Profile";
+import Admin from "../pages/Admin";
 import { isLoggedAPI } from "./api";
 import { useLogin } from "./store";
 import { Toaster } from "@/components/ui/sonner";
@@ -21,6 +22,7 @@ createRoot(document.getElementById("root")!).render(
         <Route path="/" element={<Home />} />
         <Route path="/page/:page" element={<Home />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/admin" element={<Admin />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>

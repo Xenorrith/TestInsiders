@@ -15,7 +15,10 @@ const authMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
-  const token = req.headers.authorization?.split(" ")[1];
+  const token = req.headers.cookie?.
+      split("; ")
+      .find((row) => row.startsWith("auth_token="))
+      ?.split("=")[1];;
 
   if (!token) {
     return res.status(401).json({ error: "Unauthorized" });

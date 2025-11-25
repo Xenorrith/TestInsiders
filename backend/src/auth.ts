@@ -58,13 +58,15 @@ authRouter.post("/login", async (req, res) => {
         return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    res.cookie("auth_token", generateToken(user.id, "7d"), {
+    const token = generateToken(user.id, "7d");
+
+    res.cookie("auth_token", token, {
         secure: false,
         sameSite: "strict",
         maxAge: 60 * 60 * 24 * 7 * 1000,
     });
 
-    res.json({ token: generateToken(user.id, "7d") });
+    res.json({ token });
 });
 
 authRouter.get("/verify-email/:token", async (req, res) => {

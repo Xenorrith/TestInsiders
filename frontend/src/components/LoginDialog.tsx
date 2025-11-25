@@ -7,6 +7,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { login } from "@/app/api";
 import { toast } from "sonner";
+import { useLogin } from "@/app/store";
 
 const loginSchema = z.object({
     email: z.string().email("Please enter a valid email"),
@@ -16,14 +17,24 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 const LoginDialog = () => {
+    const setIsAuthenticated = useLogin((state) => state.setLogin);
     const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
         resolver: zodResolver(loginSchema)
     });
 
     const onSubmit = async (data: LoginFormData) => {
-        await login(data.email, data.password);
-        
-        toast("Login Successful");
+        try {
+            const success = await login(data.email, data.password);
+
+            if (success) {
+                toast("Login Successful");
+                setIsAuthenticated(true);
+            } else {
+                toast("Login failed");
+            }
+        } catch (error) {
+            toast("Login failed");
+        }
     };
 
     return (

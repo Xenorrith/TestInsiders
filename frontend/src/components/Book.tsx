@@ -1,8 +1,9 @@
 import type { BookType } from "@/app/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ProfileIcon from "./ProfileIcon";
+import type { ReactNode } from "react";
 
-const Book = ({ book }: { book: BookType }) => {
+const Book = ({ book, action }: { book: BookType; action?: ReactNode }) => {
   return (
     <Card className="cursor-poiner w-full max-w-[300px] overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1 gap-0">
       <CardHeader className="p-0">
@@ -35,6 +36,8 @@ const Book = ({ book }: { book: BookType }) => {
             </p>
           </div>
         </div>
+
+        {action && <div className="pt-3">{action}</div>}
       </CardContent>
     </Card>
   );

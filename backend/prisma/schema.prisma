@@ -39,7 +39,7 @@ model User {
 model Book {
   id    String @id @default(cuid())
   name String
-  author User @relation(fields: [authorId], references: [id])
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId String
   photo String
   tradesAsSender Trade[] @relation("senderBook")
@@ -54,9 +54,9 @@ model Trade {
   senderBookId String
   receiverBookId String
 
-  sender User @relation(fields: [senderId], references: [id], name: "sender")
-  receiver User @relation(fields: [receiverId], references: [id], name: "receiver")
+  sender User @relation(fields: [senderId], references: [id], name: "sender", onDelete: Cascade)
+  receiver User @relation(fields: [receiverId], references: [id], name: "receiver", onDelete: Cascade)
 
-  senderBook Book @relation(fields: [senderBookId], references: [id], name: "senderBook")
-  receiverBook Book @relation(fields: [receiverBookId], references: [id], name: "receiverBook")
+  senderBook Book @relation(fields: [senderBookId], references: [id], name: "senderBook", onDelete: Cascade)
+  receiverBook Book @relation(fields: [receiverBookId], references: [id], name: "receiverBook", onDelete: Cascade)
 }

@@ -25,11 +25,12 @@ tradeRouter.post("/", authMiddleware, async (req: AuthRequest, res) => {
 });
 
 tradeRouter.patch("/:id", authMiddleware, async (req: AuthRequest, res) => {
-    const tradeId = req.params.id;
-    const requesterId = req.userId;
+  let result: any;
+  const tradeId = req.params.id;
+  const requesterId = req.userId;
 
-    const trade = await prisma.trade.findUnique({ where: { id: tradeId } });
-    if (!trade) return res.status(404).json({ error: "Trade not found" });
+  const trade = await prisma.trade.findUnique({ where: { id: tradeId } });
+  if (!trade) return res.status(404).json({ error: "Trade not found" });
 
     if (trade.status === TradeStatus.ACCEPTED || trade.status == TradeStatus.REJECTED) {
         return res.status(400).json({ error: "Trade already completed" });
@@ -53,19 +54,17 @@ tradeRouter.patch("/:id", authMiddleware, async (req: AuthRequest, res) => {
       if (!senderBook || !receiverBook)
         return res.status(400).json({ error: "Books not found" });
 
-      const result = await prisma.$transaction([
+      result = await prisma.$transaction([
         prisma.book.update({
           where: { id: receiverBook.id },
-          data: { authorId: trade.receiverId },
+          data: { authorId: trade.senderId },
         }),
 
         prisma.book.update({
           where: { id: senderBook.id },
-          data: { authorId: trade.senderId },
+          data: { authorId: trade.receiverId },
         }),
       ]);
-
-      return res.json({ success: true, result });
     }
 
     const updated = await prisma.trade.update({

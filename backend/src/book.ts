@@ -14,7 +14,18 @@ bookRouter.get("/", async (req: AuthRequest, res) => {
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
 
-  const result = await paginate<Prisma.BookWhereInput, any>(prisma.book, { page, limit, orderBy: { name: "asc" } });
+  const result = await paginate<Prisma.BookWhereInput, any>(prisma.book, {
+    page, limit, orderBy: { name: "asc" },
+    where: {
+      authorId: {
+        not: req.userId as string,
+      },
+      name: {
+        contains: (req.query.search as string) || "",
+        mode: "insensitive"
+      }
+    },
+  });
   res.json(result);
 });
 
@@ -29,7 +40,13 @@ bookRouter.get("/me", async (req: AuthRequest, res) => {
   const result = await paginate<Prisma.BookWhereInput, any>(prisma.book, {
     page,
     limit,
-    where: { authorId: user.id },
+    where: { 
+      authorId: user.id,
+      name: {
+        contains: (req.query.search as string) || "",
+        mode: "insensitive"
+      }
+    },
     orderBy: { name: "asc" },
   });
 
